@@ -39,6 +39,7 @@ static void on_recv(uv_udp_t* handle,
                 addr,
                 NULL); // send callback
             free(send_buf.base);
+            uv_sleep(5);  // 发送间隔，todo避免丢包
         }
         uv_fs_close(handle->loop, &file, fd, NULL);
         free(read_buf.base);
