@@ -29,7 +29,7 @@ void on_recv(uv_udp_t* handle,
     else {
         if(first) {
             first = false;
-            char file_name[strlen(config.test_file)+5];
+            char file_name[strlen(config.test_file)+6];
             strcpy(file_name, "recv_");
             strcat(file_name, config.test_file);
             printf("save as %s", file_name);

@@ -25,12 +25,11 @@ static void on_recv(uv_udp_t* handle,
         uv_udp_send_t req;
         uv_fs_t file;
         int fd = uv_fs_open(handle->loop, &file, config.test_file, UV_FS_O_RDONLY, 0, NULL);
-        uv_buf_t read_buf = uv_buf_init(malloc(1024), 1024);
+        uv_buf_t send_buf = uv_buf_init(malloc(1024), 1024);
         while(1) {
-            uv_fs_read(handle->loop, &file, fd, &read_buf, 1, -1, NULL);  // offset-1, 自动递进
+            uv_fs_read(handle->loop, &file, fd, &send_buf, 1, -1, NULL);  // offset-1, 自动递进
             if(file.result <= 0) break;
-            uv_buf_t send_buf = uv_buf_init(malloc(file.result), file.result);
-            memcpy(send_buf.base, read_buf.base, file.result);
+            send_buf.len = file.result;
             uv_udp_send(
                 &req,
                 handle,
@@ -38,19 +37,19 @@ static void on_recv(uv_udp_t* handle,
                 1, // buf count
                 addr,
                 NULL); // send callback
-            free(send_buf.base);
+            send_buf.len = 1024;
             uv_sleep(5);  // 发送间隔，todo避免丢包
         }
         uv_fs_close(handle->loop, &file, fd, NULL);
-        free(read_buf.base);
-        read_buf = uv_buf_init("", 0);
+        send_buf.len = 0;
         uv_udp_send(
                 &req,
                 handle,
-                &read_buf,
+                &send_buf,
                 1, // buf count
                 addr,
                 NULL); // send callback
+        free(send_buf.base);
     }
 }
 
